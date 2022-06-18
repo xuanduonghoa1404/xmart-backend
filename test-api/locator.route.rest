@@ -1,0 +1,13 @@
+### Get all
+GET http://localhost:4000/api/locator
+
+###Save one
+POST http://localhost:4000/api/locator
+Content-Type: application/json
+
+{
+    "storeID": "HN1",
+    "name": "Giải Phóng",
+    "address": "Giải Phóng",
+    "status": true
+}

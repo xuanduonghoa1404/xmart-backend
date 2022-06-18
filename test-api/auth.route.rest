@@ -1,0 +1,43 @@
+POST http://localhost:4000/api/auth/register
+Content-Type: application/json
+
+{
+    "name": "Ngô Tiến Hưng",
+    "email": "hungnt@gmail.com",
+    "password": "123456",
+    "address" : "Hà Nội, Việt Nam",
+    "phone" : "0985788650",
+    "role" : "admin"
+}
+###
+
+POST http://localhost:4000/api/auth/login
+Content-Type: application/json
+
+{
+    "email": "hungnt@gmail.com",
+    "password": "123456"
+}
+###
+
+POST http://localhost:4000/api/auth/login
+Content-Type: application/json
+
+{
+    "email": "xuanduonghoa1404@gmail.com",
+    "password": "123456"
+}
+###
+
+
+POST http://localhost:4000/api/auth/register
+Content-Type: application/json
+
+{
+    "name": "Hoa Xuân Dương",
+    "email": "xuanduonghoa1404@gmail.com",
+    "password": "123456",
+    "address" : "Hà Nội, Việt Nam",
+    "phone" : "0963220999",
+    "role" : "admin"
+}
