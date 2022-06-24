@@ -38,7 +38,12 @@ const userSchema = new mongoose.Schema({
         enum: ['admin', 'customer', 'cashier', 'inventoryManager'],
         default: 'customer',
     },
-    photo: String
+    photo: String,
+    permissionConfigShop: {
+        type: String,
+        enum: ['read', 'edit', 'abandoned'],
+        default: 'abandoned',
+    }
 });
 userSchema.set('timestamps', true);
 module.exports = mongoose.model('User', userSchema);

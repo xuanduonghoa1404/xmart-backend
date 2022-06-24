@@ -84,4 +84,4 @@ const inventorySchema = new mongoose.Schema({
   },
 });
 
-module.exports = mongoose.model("Material", inventorySchema);
+module.exports = mongoose.model("Inventory", inventorySchema);

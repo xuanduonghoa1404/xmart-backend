@@ -25,18 +25,27 @@ const inventorySchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: "Locator",
   },
-  import: [
+  imports: [
     {
       product: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "Product",
       },
       sku: String,
-      quantity: Number,
-      date_manufacture: Date,
-      date_expiration: Date,
+      date_manufacture: {
+        type: Date,
+        required: true
+      },
+      date_expiration: {
+        type: Date,
+        required: true
+      },
+      quantity: {
+        type: Number,
+        default: 0,
+      },
     },
   ],
 });
 inventorySchema.set("timestamps", true);
-module.exports = mongoose.model("Inventory", inventorySchema);
+module.exports = mongoose.model("ImportInventory", inventorySchema);

@@ -40,4 +40,4 @@ const exportInventorySchema = new mongoose.Schema({
   ],
 });
 exportInventorySchema.set("timestamps", true);
-module.exports = mongoose.model("ExportMaterial", exportInventorySchema);
+module.exports = mongoose.model("ExportInventory", exportInventorySchema);

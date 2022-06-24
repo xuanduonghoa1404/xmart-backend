@@ -46,10 +46,24 @@ const productSchema = new mongoose.Schema({
                 type: mongoose.Schema.Types.ObjectId,
                 ref: 'Locator'
             },
-            quantity: {
-                type: Number,
-                default: 0,
-            },
+            imports: [
+                {
+                    sku: String,
+                    date_manufacture: {
+                        type: Date,
+                        required: true
+                    },
+                    date_expiration: {
+                        type: Date,
+                        required: true
+                    },
+                    quantity: {
+                        type: Number,
+                        default: 0,
+                    },
+                }
+            ]
+
         }
     ]
     // ,
