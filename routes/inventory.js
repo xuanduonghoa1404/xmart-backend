@@ -3,6 +3,7 @@ const express = require('express');
 const router = express.Router();
 const Inventory = require('../models/Inventory');
 const Product = require('../models/Product');
+const moment = require('moment');
 //Getting All
 router.get('/inventory', async (req, res) => {
     try {
@@ -13,7 +14,51 @@ router.get('/inventory', async (req, res) => {
         res.status(400).json({ message: error.message });
     }
 });
-
+router.get('/inventory-date-expiration', async (req, res) => {
+    try {
+        let inventories = await Product.find({
+            'inventory.imports.date_expiration': {
+                $gt: new Date(),
+                $lt: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000)
+            }
+        }).sort({ createdAt: -1 })
+        .populate("type", "name")
+        inventories.forEach((inventory) => {
+            let inventoryArray = inventory.inventory;
+            let newInventory = [];
+            inventoryArray.forEach(inventoryEle => {
+                let imports = inventoryEle.imports;
+                let newImports = [];
+                imports.forEach((importEle) => {
+                    let condition = importEle.date_expiration > new Date() && importEle.date_expiration < new Date(Date.now() + 5 * 24 * 60 * 60 * 1000)
+                    if (condition) {
+                       newImports.push(importEle);
+                    }
+                })
+                if (newImports.length) {
+                    inventoryEle.imports = newImports;
+                    newInventory.push(inventoryEle);
+                }
+                
+            }
+            )
+            inventory.inventory = newInventory;
+        }
+        );
+        // .where('imports').elemMatch({
+        //     date_expiration: { $gte: new Date() },
+        //     date_expiration: { $lte: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000) }
+        // })
+        // get products with remain 5 days from today to date expiration in imports array 
+        // inventories.forEach(element => {
+        //     element.dateExpiration = element.dateExpiration.toISOString().split('T')[0];
+        // }
+        // );
+        res.json(inventories);
+    } catch (error) {
+        res.status(400).json({ message: error.message });
+    }
+});
 router.get('/inventoryInput', async (req, res) => {
     try {
         const inventory = await Inventory.find({ amountInput: { $ne: 0 } });
