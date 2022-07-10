@@ -3,6 +3,8 @@ const express = require('express');
 const router = express.Router();
 const Inventory = require('../models/Inventory');
 const Product = require('../models/Product');
+const Type = require("../models/Type");
+const Shop = require("../models/Shop");
 const moment = require('moment');
 //Getting All
 router.get('/inventory', async (req, res) => {
@@ -16,12 +18,64 @@ router.get('/inventory', async (req, res) => {
 });
 router.get('/inventory-date-expiration', async (req, res) => {
     try {
-        let inventories = await Product.find({
-            'inventory.imports.date_expiration': {
-                $gt: new Date(),
-                $lt: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000)
+        const type = await Type.find()
+        let shop = await Shop.find()
+        const ONE_DAY = 24 * 60 * 60 * 1000; // hours*minutes*seconds*milliseconds
+        shop = shop[0]
+        let conditionOrElement = {
+            $or: []
+        };
+        let mapType = new Map();
+        type.forEach(element => {
+            let conditionAndElement = { $and: [] };
+            let numberOfDate = 0;
+            let check = false;
+            shop.warningType.forEach(item => {
+                if (item.type == element._id) {
+                    numberOfDate = item.numberOfDate;
+                    check = true;
+                }
+            })
+            if (!check) {
+                numberOfDate = 10;
             }
-        }).sort({ createdAt: -1 })
+            mapType.set(element._id, numberOfDate);
+            
+            conditionAndElement.$and.push({ type: element._id });
+            let conditionDate = {
+                'inventory.imports.date_expiration': {
+                    $gt: new Date(),
+                    $lt: new Date(Date.now() + numberOfDate * ONE_DAY)
+                }
+            }
+            conditionAndElement.$and.push(conditionDate);
+            conditionOrElement.$or.push(conditionAndElement);
+        })
+        
+        let conditions = {
+            $or: [
+                { $and: [{
+                    'inventory.imports.date_expiration': {
+                        $gt: new Date(),
+                        $lt: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000)
+                    }
+                }, {type: "62918ab4cab3b0249cbd2de3"}] },
+                { $and: [{
+                    'inventory.imports.date_expiration': {
+                        $gt: new Date(),
+                        $lt: new Date(Date.now() + 10 * 24 * 60 * 60 * 1000)
+                    }
+                }, {type: "62918ad5cab3b0249cbd2de4"}] }
+            ]
+        };
+console.log('mapType', mapType)
+        // let inventories = await Product.find({
+        //     'inventory.imports.date_expiration': {
+        //         $gt: new Date(),
+        //         $lt: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000)
+        //     }
+        // }).sort({ createdAt: -1 })
+        let inventories = await Product.find(conditionOrElement).sort({ createdAt: -1 })
         .populate("type", "name")
         inventories.forEach((inventory) => {
             let inventoryArray = inventory.inventory;
@@ -30,7 +84,9 @@ router.get('/inventory-date-expiration', async (req, res) => {
                 let imports = inventoryEle.imports;
                 let newImports = [];
                 imports.forEach((importEle) => {
-                    let condition = importEle.date_expiration > new Date() && importEle.date_expiration < new Date(Date.now() + 5 * 24 * 60 * 60 * 1000)
+                    let numberOfDateType = mapType.get(inventory.type);
+                    console.log(numberOfDateType)
+                    let condition = importEle.date_expiration > new Date() && importEle.date_expiration < new Date(Date.now() + numberOfDateType * ONE_DAY);
                     if (condition) {
                        newImports.push(importEle);
                     }
