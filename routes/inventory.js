@@ -31,7 +31,7 @@ router.get('/inventory-date-expiration', async (req, res) => {
             let numberOfDate = 0;
             let check = false;
             shop.warningType.forEach(item => {
-                if (item.type == element._id) {
+                if (element._id.toString() === item.type.toString()) {
                     numberOfDate = item.numberOfDate;
                     check = true;
                 }
@@ -39,7 +39,7 @@ router.get('/inventory-date-expiration', async (req, res) => {
             if (!check) {
                 numberOfDate = 10;
             }
-            mapType.set(element._id, numberOfDate);
+            mapType.set(element._id.toString(), numberOfDate);
             
             conditionAndElement.$and.push({ type: element._id });
             let conditionDate = {
@@ -52,29 +52,6 @@ router.get('/inventory-date-expiration', async (req, res) => {
             conditionOrElement.$or.push(conditionAndElement);
         })
         
-        let conditions = {
-            $or: [
-                { $and: [{
-                    'inventory.imports.date_expiration': {
-                        $gt: new Date(),
-                        $lt: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000)
-                    }
-                }, {type: "62918ab4cab3b0249cbd2de3"}] },
-                { $and: [{
-                    'inventory.imports.date_expiration': {
-                        $gt: new Date(),
-                        $lt: new Date(Date.now() + 10 * 24 * 60 * 60 * 1000)
-                    }
-                }, {type: "62918ad5cab3b0249cbd2de4"}] }
-            ]
-        };
-console.log('mapType', mapType)
-        // let inventories = await Product.find({
-        //     'inventory.imports.date_expiration': {
-        //         $gt: new Date(),
-        //         $lt: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000)
-        //     }
-        // }).sort({ createdAt: -1 })
         let inventories = await Product.find(conditionOrElement).sort({ createdAt: -1 })
         .populate("type", "name")
         inventories.forEach((inventory) => {
@@ -84,8 +61,7 @@ console.log('mapType', mapType)
                 let imports = inventoryEle.imports;
                 let newImports = [];
                 imports.forEach((importEle) => {
-                    let numberOfDateType = mapType.get(inventory.type);
-                    console.log(numberOfDateType)
+                    let numberOfDateType = mapType.get(inventory.type._id.toString());
                     let condition = importEle.date_expiration > new Date() && importEle.date_expiration < new Date(Date.now() + numberOfDateType * ONE_DAY);
                     if (condition) {
                        newImports.push(importEle);
@@ -101,15 +77,70 @@ console.log('mapType', mapType)
             inventory.inventory = newInventory;
         }
         );
-        // .where('imports').elemMatch({
-        //     date_expiration: { $gte: new Date() },
-        //     date_expiration: { $lte: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000) }
-        // })
-        // get products with remain 5 days from today to date expiration in imports array 
-        // inventories.forEach(element => {
-        //     element.dateExpiration = element.dateExpiration.toISOString().split('T')[0];
-        // }
-        // );
+        res.json(inventories);
+    } catch (error) {
+        res.status(400).json({ message: error.message });
+    }
+});
+router.get('/inventory-quantity', async (req, res) => {
+    try {
+        const type = await Type.find()
+        let shop = await Shop.find()
+        shop = shop[0]
+        let conditionOrElement = {
+            $or: []
+        };
+        let mapType = new Map();
+        type.forEach(element => {
+            let conditionAndElement = { $and: [] };
+            let quantity = 0;
+            let check = false;
+            shop.warningType.forEach(item => {
+                if (element._id.toString() === item.type.toString()) {
+                    quantity = item.quantity;
+                    check = true;
+                }
+            })
+            if (!check) {
+                quantity = 200;
+            }
+            mapType.set(element._id.toString(), quantity);
+            
+            conditionAndElement.$and.push({ type: element._id });
+            let conditionQuantity = {
+                'inventory.imports.quantity': {
+                    $lt: quantity
+                }
+            }
+            conditionAndElement.$and.push(conditionQuantity);
+            conditionOrElement.$or.push(conditionAndElement);
+        })
+        
+        let inventories = await Product.find(conditionOrElement).sort({ createdAt: -1 })
+        .populate("type", "name")
+        inventories.forEach((inventory) => {
+            let inventoryArray = inventory.inventory;
+            let newInventory = [];
+            inventoryArray.forEach(inventoryEle => {
+                let imports = inventoryEle.imports;
+                let newImports = [];
+                imports.forEach((importEle) => {
+                    let quantity = mapType.get(inventory.type._id.toString());
+                    let condition = importEle.quantity < quantity;
+                    if (condition) {
+                       newImports.push(importEle);
+                    }
+                })
+                if (newImports.length) {
+                    inventoryEle.imports = newImports;
+                    newInventory.push(inventoryEle);
+                }
+                
+            }
+            )
+            inventory.inventory = newInventory;
+        }
+        );
         res.json(inventories);
     } catch (error) {
         res.status(400).json({ message: error.message });
