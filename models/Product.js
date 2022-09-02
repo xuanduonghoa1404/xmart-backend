@@ -66,21 +66,6 @@ const productSchema = new mongoose.Schema({
 
         }
     ]
-    // ,
-    // book: [
-    //     {
-
-    //         time: {
-    //             type: Date,
-    //             required: true,
-    //             default: Date.now,
-    //         },
-    //         amount: {
-    //             type: Number,
-    //             default: 0,
-    //           },
-    //     }
-    // ] 
 });
 productSchema.set('timestamps', true);
 module.exports = mongoose.model('Product', productSchema);
