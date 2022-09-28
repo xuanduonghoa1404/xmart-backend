@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const Product = require("../models/Product");
 const Type = require("../models/Type");
-
+// Admin
 //Getting All
 router.get("/product", async (req, res) => {
   try {

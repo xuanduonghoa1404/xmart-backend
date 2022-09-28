@@ -3,7 +3,7 @@ const Marketing = require("../models/Marketing");
 const router = express.Router();
 const Product = require("../models/Product");
 const Type = require("../models/Type");
-
+// Customers
 //Getting All
 router.get("/products", async (req, res) => {
     try {

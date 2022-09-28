@@ -8,6 +8,7 @@ const orderRouter = require('./order');
 const inventoryRouter = require('./inventory');
 const typeRouter = require('./type');
 const marketingRouter = require('./marketing');
+// const uploadRouter = require('./upload');
 const shopRouter = require('./shop');
 const importInventory = require('./importInventory');
 const exportInventory = require('./exportInventory');
@@ -31,6 +32,7 @@ const route = (app) => {
     app.use('/api', importInventory);
     app.use('/api', exportInventory);
     app.use('/api', statistic);
+    // app.use('/api', uploadRouter);
 };
 
 module.exports = route;

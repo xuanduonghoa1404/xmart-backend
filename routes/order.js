@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const Order = require('../models/Order');
 const User = require('../models/User');
-const Table = require('../models/Table');
+const Cart = require('../models/Cart');
 const Product = require('../models/Product');
 const { number, func } = require('joi');
 //Getting All (For Admin)
@@ -67,6 +67,49 @@ router.post('/order', async (req, res) => {
         res.status(400).json({ message: err.message });
     }
 });
+
+//Add order 
+
+router.post('/add', async (req, res) => {
+    try {
+      const cart = req.body.cartId;
+      const total = req.body.total;
+      const user = req.user._id;
+  
+      const order = new Order({
+        cart,
+        user,
+        total
+      });
+  
+      const orderDoc = await order.save();
+  
+      const cartDoc = await Cart.findById(orderDoc.cart._id).populate({
+        path: 'products.product',
+        populate: {
+          path: 'brand'
+        }
+      });
+  
+      const newOrder = {
+        _id: orderDoc._id,
+        created: orderDoc.created,
+        user: orderDoc.user,
+        total: orderDoc.total,
+        products: cartDoc.products
+      };
+  
+      res.status(200).json({
+        success: true,
+        message: `Your order has been placed successfully!`,
+        order: { _id: orderDoc._id }
+      });
+    } catch (error) {
+      res.status(400).json({
+        error: 'Your request could not be processed. Please try again.'
+      });
+    }
+  });
 
 //Save one email
 router.post('/orderemail', async (req, res) => {

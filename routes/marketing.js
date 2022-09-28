@@ -10,7 +10,25 @@ router.get("/marketing", async (req, res) => {
       // .sort({ createdAt: -1 })
       .limit(limit)
       .skip(limit * page);
-    res.json(marketing);
+    let newMarketing = [];
+    marketing.forEach(function (mkt) {
+      if(mkt.discount_type === 'PERCENT') {
+        mkt._doc.discount = "-" + mkt.value + "%";
+      } else if(mkt.discount_type === 'FIX_AMOUNT') {
+        mkt._doc.discount = "-" + mkt.value + "đ";
+      } else if(mkt.discount_type === 'FLAT') {
+        mkt._doc.discount = "" + mkt.value + "đ";
+      }
+      if(mkt.condition === 'QTY') {
+        mkt._doc.condition_text = "Còn " + mkt.condition_value + " sản phẩm";
+      } else if(mkt.condition === 'DATE') {
+        mkt._doc.condition_text = "Còn " + mkt.condition_value + " ngày";
+      } else if(mkt.condition === 'ALL') {
+        mkt._doc.condition_text = "Tất cả";
+      }
+      newMarketing.push(mkt);
+    });
+    res.json(newMarketing);
   } catch (error) {
     res.status(400).json({ message: error.message });
   }
@@ -19,6 +37,7 @@ router.get("/marketing", async (req, res) => {
 router.post("/marketing", async (req, res) => {
   const marketing = new Marketing({
     name: req.body.name,
+    description: req.body.description,
     apply: req.body.apply,
     apply_type: req.body.apply_type,
     apply_product: req.body.apply_product,
@@ -40,6 +59,9 @@ router.patch("/marketing/:id", getMarketingById, async (req, res) => {
   if (req.body.name != null) {
     req.marketing.name = req.body.name;
   }
+  if (req.body.description != null) {
+    req.marketing.description = req.body.description;
+  }
 
   if (req.body.apply != null) {
     req.marketing.apply = req.body.apply;
@@ -52,6 +74,9 @@ router.patch("/marketing/:id", getMarketingById, async (req, res) => {
   }
   if (req.body.discount_type != null) {
     req.marketing.discount_type = req.body.discount_type;
+  }
+  if (req.body.value != null) {
+    req.marketing.value = req.body.value;
   }
   if (req.marketing.status != null) {
     req.marketing.status = req.body.status;

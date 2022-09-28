@@ -11,20 +11,24 @@ GET http://localhost:4000/api/inventory
 
 ###
 
-POST http://localhost:4000/api/marketing/
-Content-Type: application/json
+GET http://localhost:4000/api/marketing/
 
-{
-    "name": "Sales Promotion",
-    "apply" : 0,
-    "apply_type": [],
-    "apply_product": [],
-    "discount_type": "PERCENT",
-    "value": 10,
-    "status": true,
-    "condition": "DATE",
-    "condition_value": 5
-}
+###
+
+# POST http://localhost:4000/api/marketing/
+# Content-Type: application/json
+
+# {
+#     "name": "Sales Promotion",
+#     "apply" : 0,
+#     "apply_type": [],
+#     "apply_product": [],
+#     "discount_type": "PERCENT",
+#     "value": 10,
+#     "status": true,
+#     "condition": "DATE",
+#     "condition_value": 5
+# }
 
 
 ###
@@ -32,30 +36,3 @@ GET http://localhost:4000/api/products
 
 ###
 ###
-
-POST http://localhost:4000/api/importInventory/
-Content-Type: application/json
-
-{
-    "name": "Chè",
-    "name_type" : "Chè thái nguyên",
-    "description" : "Nhập hàng lần 2",
-    "unit" : "kg",
-    "amountInput" : 2,
-    "priceperunit" : 10000
-}
-###
-PATCH  http://localhost:4000/api/updateImportInventory/5fd916fa1ad1483a04ec4e87
-Content-Type: application/json
-
-{
-    "name": "Chè",
-    "name_type" : "Chè tươi",
-    "description" : "Nhập hàng",
-    "unit" : "3",
-    "amountOutput" : 1,
-    "amountInput" : 1
-}
-
-###
-DELETE   http://localhost:4000/api/inventory/5fb2d96034da922398c9bb12

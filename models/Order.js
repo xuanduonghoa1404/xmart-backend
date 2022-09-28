@@ -1,33 +1,29 @@
 const mongoose = require('mongoose');
 const orderSchema = new mongoose.Schema(
     {
+        // 
         status: {
             type: String,
-            enum: ['paid', 'unpaid', 'deactive', 'shipping'],
-            default: 'unpaid',
+            enum: ['Not processed', 'Processing', 'Shipped', 'Delivered', 'Cancelled'],
+            default: 'Not processed',
         },
+        // 
         user: {
             type: mongoose.Schema.Types.ObjectId,
             ref: 'User',
         },
 
-        table: {
+        cart: {
             type: mongoose.Schema.Types.ObjectId,
-            ref: 'Table',
+            ref: 'Cart'
         },
-        totalPrice: {
+
+        total: {
             type: Number,
+            default: 0
         },
-        order: [
-            {
-                product: {
-                    type: mongoose.Schema.Types.ObjectId,
-                    ref: 'Product',
-                },
-                productID: String,
-                amount: Number,
-            },
-        ],
+
+        
     },
     {
         // Make Mongoose use Unix time (seconds since Jan 1, 1970)

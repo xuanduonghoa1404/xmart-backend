@@ -1,9 +1,8 @@
 const mongoose = require('mongoose');
 const marketingSchema = new mongoose.Schema({
-    // ruleID: {
-    //     type: String,
-    //     required: true,
-    // },
+    description: {
+        type: String,
+    },
     name: {
         type: String,
         required: true,
@@ -46,6 +45,10 @@ const marketingSchema = new mongoose.Schema({
     condition_value: {
         type: Number,
         default: 0,
+    },
+    photo: {
+        type: String,
+        required: false
     }
 });
 marketingSchema.set('timestamps', true);
