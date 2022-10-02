@@ -11,18 +11,33 @@ router.get('/order', async (req, res) => {
         let limit = Number(req.query.limit);
         let page = Number(req.query.page);
         const order = await Order.find()
-            .sort({ updatedAt: -1 })
+            .sort({ createAt: -1 })
             .limit(limit)
             .skip(limit * page)
             // .populate('order.product')
+            // .populate({
+            //     path: 'cart.products',
+            //     populate: {
+            //         path: 'product',
+            //     },
+            // })
+            
+            .populate('user', 'name email')
+            .populate('cart')
             .populate({
-                path: 'order.product',
+                path: 'cart',
                 populate: {
-                    path: 'type',
+                    path: 'products',
+                    populate: {
+                        path: 'product'
+                    },
                 },
             })
-            .populate('user', 'name')
-            .populate('table', 'name');
+            // .populate({
+            //     path: 'cart.user',
+            //     select:
+            //       'name',
+            //   });;
         res.json(order);
     } catch (error) {
         res.status(400).json({ message: error.message });

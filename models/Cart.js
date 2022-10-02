@@ -15,11 +15,6 @@ const CartItemSchema = new Schema({
   totalPrice: {
     type: Number,
     default: 0
-  },
-  status: {
-    type: String,
-    default: 'Not processed',
-    enum: ['Not processed', 'Processing', 'Shipped', 'Delivered', 'Cancelled']
   }
 });
 
