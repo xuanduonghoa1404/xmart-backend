@@ -245,38 +245,47 @@ router.get('/order/:id/calculate', getOrderById, async (req, res) => {
     }
 });
 //Getting one
-router.get('/order/:id', getOrderById, async (req, res) => {
-    try {
-        res.send(req.order);
-    } catch (error) {
-        return res.status(500).json({ message: error.message });
-    }
+router.get("/order/:id", getOrderById, async (req, res) => {
+  try {
+    let r = [req.order];
+    res.json(r);
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
+  }
 });
 //Deleting one (For Admin)
-router.delete('/order/:id', getOrderById, async (req, res) => {
-    try {
-        await req.order.remove();
-        res.json({ message: `Deleted Order` });
-    } catch (err) {
-        res.status(500).json({ message: err.message });
-    }
+router.delete("/order/:id", getOrderById, async (req, res) => {
+  try {
+    await req.order.remove();
+    res.json({ message: `Deleted Order` });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
 });
 
 async function getOrderById(req, res, next) {
-    let order;
-    try {
-        order = await Order.findById(req.params.id)
-            .populate('order.product')
-            .populate('user', 'username')
-            .populate('table', 'name');
-        if (order == null) {
-            return res.status(404).json({ message: 'Can not find order' });
-        }
-    } catch (error) {
-        return res.status(500).json({ message: error.message });
-    }
-    req.order = order;
-    next();
+  let order;
+  try {
+    order = await Order.findById(req.params.id)
+      .populate("user", "name email phone")
+      .populate("cart")
+      .populate({
+        path: "cart",
+        populate: {
+          path: "products",
+          populate: {
+            path: "product",
+          },
+        },
+      });
+      if (order == null) {
+        return res.status(404).json({ message: "Can not find order" });
+      }
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
+  }
+  req.order = order;
+  next();
 }
 
 async function caculateTotalPrice(order) {
