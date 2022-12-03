@@ -23,7 +23,10 @@ const orderSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "Cart",
     },
-
+    locator: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Locator",
+    },
     total: {
       type: Number,
       default: 0,

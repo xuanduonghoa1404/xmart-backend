@@ -136,9 +136,6 @@ function getProductAfterDiscount(item, marketings) {
                 }
                 item._doc.priceAfterDiscount = priceAfterDiscount;
                 return item;
-                // item._doc.priceAfterDiscount = priceAfterDiscount;
-                // products.push(item);
-                // break;
             } else if (marketing.apply === 'TYPE') {
                 // check condition if
                 if (marketing.apply_type.toString().indexOf(item.type._id.toString())) {
@@ -157,7 +154,13 @@ function getProductAfterDiscount(item, marketings) {
 
 
             } else if (marketing.apply === 'PRODUCT') {
-                if (marketing.apply_product.toString().indexOf(item._id.toString())) {
+                console.log(
+                  item,
+                  marketing.apply_product
+                    .toString()
+                    .indexOf(item._id.toString())
+                );
+                if (marketing.apply_product.toString().indexOf(item._id.toString()) >= 0) {
                     if (marketing.discount_type === "PERCENT") {
                         priceAfterDiscount = item.price - item.price * marketing.value / 100;
                     } else if (marketing.discount_type === "FIX_AMOUNT") {
@@ -167,6 +170,7 @@ function getProductAfterDiscount(item, marketings) {
                             priceAfterDiscount = marketing.value;
                         }
                     }
+                    console.log("priceAfterDiscount"), priceAfterDiscount;
                     item._doc.priceAfterDiscount = priceAfterDiscount;
                     return item;
                 }

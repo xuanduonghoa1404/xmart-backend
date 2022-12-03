@@ -218,7 +218,18 @@ router.patch('/order/:id/status/:status', getOrderById, async (req, res) => {
         res.status(400).json({ message: err.message });
     }
 });
-
+router.patch("/order-ship/:id", getOrderById, async (req, res) => {
+  if (req.body.locator != null) {
+    req.order.locator = req.body.locator;
+    req.order.status = "Shipped";
+  }
+  try {
+    const updateOrder = await req.order.save();
+    res.json(updateOrder);
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
+});
 //Update status one
 router.patch('/order/:id/add', getOrderById, async (req, res) => {
     let order = req.order;
