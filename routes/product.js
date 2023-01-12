@@ -9,21 +9,28 @@ router.get("/product", async (req, res) => {
     let typeId = String(req.query.typeId);
     let limit = Number(req.query.limit);
     let page = Number(req.query.page);
-    console.log(typeId);
     // const product = await Product.find({ type: typeId })
     //   .sort({ createdAt: -1 })
     //   .populate("type", "name");
     let product = [];
-    if(typeId === "undefined") {
-         product = await Product.find()
-      .sort({ createdAt: -1 })
-      .populate("type", "name").limit(limit).skip(limit * page);;
+    let products = [];
+    if (typeId === "undefined") {
+      product = await Product.find()
+        .sort({ createdAt: -1 })
+        .populate("type", "name")
+        .limit(limit)
+        .skip(limit * page);
     } else {
-         product = await Product.find({ type: typeId })
-      .sort({ createdAt: -1 })
-      .populate("type", "name").limit(limit).skip(limit * page);;
+      product = await Product.find({ type: typeId })
+        .sort({ createdAt: -1 })
+        .populate("type", "name")
+        .limit(limit)
+        .skip(limit * page);
     }
-    res.json(product);
+    for (let item of product) {
+      products.push(getProductWithInventory(item));
+    }
+    res.json(products);
   } catch (error) {
     res.status(400).json({ message: error.message });
   }
@@ -73,25 +80,25 @@ router.post("/import-product", async (req, res) => {
   //   type: req.body.type,
   //   photo: req.body.photo,
   // });
-  const data = req.body.dataArr
+  const data = req.body.dataArr;
   try {
     const type = await Type.find();
-    
+
     // const newProduct = await Product.insertMany(data);
     // const newProduct = req.body
-    let importProduct = []
+    let importProduct = [];
     data.map((product) => {
       type.map((item) => {
         if (product.type === item.name) {
-          product.type = item._id
-          importProduct.push(product)
+          product.type = item._id;
+          importProduct.push(product);
           return;
         }
-      })
-    })
-    console.log('importProduct', importProduct)
+      });
+    });
+    console.log("importProduct", importProduct);
     const newProduct = await Product.insertMany(importProduct);
-    console.log('newProduct', newProduct)
+    console.log("newProduct", newProduct);
     res.status(201).json(newProduct);
   } catch (err) {
     res.status(400).json({ message: err.message });
@@ -190,7 +197,7 @@ router.patch("/product/deactive/:id", getProductById, async (req, res) => {
 
 //Getting one
 router.get("/product/:id", getProductById, async (req, res) => {
-  console.log(req.product)
+  console.log(req.product);
   res.send(req.product);
 });
 
@@ -203,6 +210,23 @@ router.delete("/product/:id", getProductById, async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 });
+
+function getProductWithInventory(item) {
+  let quantity = 0;
+  if (!item.inventory.length) {
+    quantity = 0;
+  } else {
+    item?.inventory?.forEach((i) => {
+      i?.imports?.forEach((j) => {
+        quantity += j.quantity;
+      });
+    });
+  }
+  return {
+    ...item._doc,
+    quantity: quantity,
+  };
+}
 
 async function getProductById(req, res, next) {
   let product;
