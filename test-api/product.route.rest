@@ -1,4 +1,7 @@
 ### Get 
+GET http://localhost:4000/api/product
+###
+### Get 
 GET http://localhost:4000/api/product?typeId=5fd422df08e4942baccd0efd
 ###
 

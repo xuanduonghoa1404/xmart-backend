@@ -12,20 +12,35 @@ router.get("/marketing", async (req, res) => {
       .skip(limit * page);
     let newMarketing = [];
     marketing.forEach(function (mkt) {
-      if(mkt.discount_type === 'PERCENT') {
+      if (mkt.discount_type === "PERCENT") {
         mkt._doc.discount = "-" + mkt.value + "%";
-      } else if(mkt.discount_type === 'FIX_AMOUNT') {
+      } else if (mkt.discount_type === "FIX_AMOUNT") {
         mkt._doc.discount = "-" + mkt.value + "đ";
-      } else if(mkt.discount_type === 'FLAT') {
+      } else if (mkt.discount_type === "FLAT") {
         mkt._doc.discount = "" + mkt.value + "đ";
       }
-      if(mkt.condition === 'QTY') {
+      if (mkt.condition === "QTY") {
         mkt._doc.condition_text = "Còn " + mkt.condition_value + " sản phẩm";
-      } else if(mkt.condition === 'DATE') {
+      } else if (mkt.condition === "DATE") {
         mkt._doc.condition_text = "Còn " + mkt.condition_value + " ngày";
-      } else if(mkt.condition === 'ALL') {
-        mkt._doc.condition_text = "Tất cả";
+      } else if (mkt.condition === "ALL") {
+        mkt._doc.condition_text = "Không";
       }
+      let dateFrom = mkt.dateFrom;
+      let dateTo = mkt.dateTo;
+      if (dateFrom) {
+        dateFrom.setTime(dateFrom.getTime() - 7 * 60 * 60 * 1000);
+      }
+      if (dateTo) {
+        dateTo.setTime(dateTo.getTime() - 7 * 60 * 60 * 1000);
+      }
+
+      console.log("marketing dateFrom", dateFrom);
+      console.log("marketing dateTo", dateTo);
+      mkt._doc.dateFrom = dateFrom;
+      mkt._doc.dateTo = dateTo;
+      // mkt._doc.toDate = new Date(mkt.dateTo).toLocaleDateString();
+      // mkt._doc.toTime = new Date(mkt.dateTo).toLocaleTimeString();
       newMarketing.push(mkt);
     });
     res.json(newMarketing);
@@ -35,6 +50,10 @@ router.get("/marketing", async (req, res) => {
 });
 //Save one
 router.post("/marketing", async (req, res) => {
+  let dateFrom = new Date(req.body.dateFrom);
+  let dateTo = new Date(req.body.dateTo);
+  console.log("dateFrom", dateFrom);
+  console.log("dateTo", dateTo);
   const marketing = new Marketing({
     name: req.body.name,
     description: req.body.description,
@@ -46,6 +65,9 @@ router.post("/marketing", async (req, res) => {
     status: req.body.status,
     condition: req.body.condition,
     condition_value: req.body.condition_value,
+    isFlashSale: req.body.isFlashSale,
+    dateFrom: req.body.dateFrom,
+    dateTo: req.body.dateTo,
   });
   try {
     const newMarketing = await marketing.save();
@@ -87,6 +109,22 @@ router.patch("/marketing/:id", getMarketingById, async (req, res) => {
   if (req.marketing.condition_value != null) {
     req.marketing.condition_value = req.body.condition_value;
   }
+  if (req.marketing.isFlashSale != null) {
+    req.marketing.isFlashSale = req.body.isFlashSale;
+  }
+  let dateFrom = new Date(req.body.dateFrom);
+  let dateTo = new Date(req.body.dateTo);
+  dateFrom.setTime(dateFrom.getTime() - 7 * 60 * 60 * 1000);
+  dateTo.setTime(dateTo.getTime() - 7 * 60 * 60 * 1000);
+  console.log("dateFrom", dateFrom, req.body.dateFrom);
+  console.log("dateTo", dateTo, req.body.dateTo);
+  if (req.marketing.dateFrom != null) {
+    req.marketing.dateFrom = dateFrom;
+  }
+  if (req.marketing.dateTo != null) {
+    req.marketing.dateTo = dateTo;
+  }
+
   try {
     const updateMarketing = await req.marketing.save();
     res.json(updateMarketing);
