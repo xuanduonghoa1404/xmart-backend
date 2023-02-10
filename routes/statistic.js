@@ -85,57 +85,65 @@ router.get('/statistic/product', async (req, res) => {
 });
 router.get('/statistic-number-order', async (req, res) => {
     try {
-        let begin = moment(Number.parseInt(req.query.begin));
-        let end = moment(Number.parseInt(req.query.end));
-        let endDate = new Date("2022-10-04T00:08:17.731Z");
-        let startDate = new Date("2022-09-25T00:08:56.161");
-        const product = await Order
-            .aggregate([
-                { $match: { "createdAt": { $gte: startDate, $lt: endDate } } },
+        let beginParam = req.query.begin;
+        let endParam = req.query.end;
+        let begin = beginParam
+          ? new Date(Number.parseInt(beginParam))
+          : new Date("2022-12-01T00:08:17.731Z");
+        let end = endParam ? new Date(Number.parseInt(endParam)) : new Date();
+      //   let begin = moment(Number.parseInt(req.query.begin));
+      //   let end = moment(Number.parseInt(req.query.end));
+      // let endDate = new Date("2023-10-04T00:08:17.731Z");
+      // let startDate = new Date("2022-09-25T00:08:56.161");
+      let endDate = end;
+      let startDate = begin;
+      console.log("startDate", startDate);
+      console.log("endDate", endDate);
+      const product = await Order.aggregate([
+        { $match: { created: { $gte: startDate, $lt: endDate } } },
+        {
+          $group: {
+            _id: {
+              $add: [
+                { $dayOfYear: "$created" },
                 {
-                    $group: {
-                        _id: {
-                            $add: [
-                                { $dayOfYear: "$createdAt" },
-                                {
-                                    $multiply:
-                                        [400, { $year: "$createdAt" }]
-                                }
-                            ]
-                        },
-                        total: { $sum: 1 },
-                        sub: { $sum: "$total" },
-                        first: { $min: "$createdAt" }
-                    }
+                  $multiply: [400, { $year: "$created" }],
                 },
-                { $sort: { _id: 1 } },
-                { $limit: 15 },
-                { $project: { date: "$first", total: 1, _id: 0, sub: "$sub" } }
-            ])
-        // 
-        // .aggregate([
-        //     { $group: { _id: { $dayOfYear: "$createdAt"},
-        //     total: { $sum: 1 } } }
-        // ])
-        // 
-        // .aggregate([
-        //     { "$match": {
-        //         $gte: new Date("2022-05-21"), $lte: new Date()
-        //     }},
-        //     { "$group": {
-        //         "_id": { "$dayOfYear": "$createdAt" },
-        //         "total": { "$sum": "$total" }
-        //     }}
-        // ])
-        // let resData = product.map((item, index) => {
-        //     // let book = item.book.map((item, index) => item.amount);
-        //     return {
-        //         name: item.name,
-        //         // total: book.reduce((total, num) => total + num, 0),
-        //         total: item.price,
-        //     };
-        // });
-        res.json(product);
+              ],
+            },
+            total: { $sum: 1 },
+            sub: { $sum: "$total" },
+            first: { $min: "$created" },
+          },
+        },
+        { $sort: { _id: 1 } },
+        { $limit: 15 },
+        { $project: { date: "$first", total: 1, _id: 0, sub: "$sub" } },
+      ]);
+      //
+      // .aggregate([
+      //     { $group: { _id: { $dayOfYear: "$createdAt"},
+      //     total: { $sum: 1 } } }
+      // ])
+      //
+      // .aggregate([
+      //     { "$match": {
+      //         $gte: new Date("2022-05-21"), $lte: new Date()
+      //     }},
+      //     { "$group": {
+      //         "_id": { "$dayOfYear": "$createdAt" },
+      //         "total": { "$sum": "$total" }
+      //     }}
+      // ])
+      // let resData = product.map((item, index) => {
+      //     // let book = item.book.map((item, index) => item.amount);
+      //     return {
+      //         name: item.name,
+      //         // total: book.reduce((total, num) => total + num, 0),
+      //         total: item.price,
+      //     };
+      // });
+      res.json(product);
     } catch (error) {
         res.status(400).json({ message: error.message });
     }
