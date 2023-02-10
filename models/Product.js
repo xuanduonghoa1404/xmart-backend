@@ -1,10 +1,24 @@
 
 const mongoose = require('mongoose');
+const slug = require("mongoose-slug-generator");
+
+const options = {
+  separator: "-",
+  lang: "en",
+  truncate: 120,
+};
+
+mongoose.plugin(slug, options);
+
 const productSchema = new mongoose.Schema({
   productID: {
     type: String,
-        required: true,
-    
+    required: true,
+  },
+  slug: {
+    type: String,
+    slug: "name",
+    unique: true,
   },
   name: {
     type: String,

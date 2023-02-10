@@ -35,8 +35,6 @@ router.get("/marketing", async (req, res) => {
         dateTo.setTime(dateTo.getTime() - 7 * 60 * 60 * 1000);
       }
 
-      console.log("marketing dateFrom", dateFrom);
-      console.log("marketing dateTo", dateTo);
       mkt._doc.dateFrom = dateFrom;
       mkt._doc.dateTo = dateTo;
       // mkt._doc.toDate = new Date(mkt.dateTo).toLocaleDateString();
@@ -114,10 +112,9 @@ router.patch("/marketing/:id", getMarketingById, async (req, res) => {
   }
   let dateFrom = new Date(req.body.dateFrom);
   let dateTo = new Date(req.body.dateTo);
-  dateFrom.setTime(dateFrom.getTime() - 7 * 60 * 60 * 1000);
-  dateTo.setTime(dateTo.getTime() - 7 * 60 * 60 * 1000);
-  console.log("dateFrom", dateFrom, req.body.dateFrom);
-  console.log("dateTo", dateTo, req.body.dateTo);
+  dateFrom.setTime(dateFrom.getTime() + 7 * 60 * 60 * 1000);
+  dateTo.setTime(dateTo.getTime() + 7 * 60 * 60 * 1000);
+  
   if (req.marketing.dateFrom != null) {
     req.marketing.dateFrom = dateFrom;
   }
