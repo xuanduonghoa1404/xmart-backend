@@ -48,8 +48,8 @@ router.get("/marketing", async (req, res) => {
 });
 //Save one
 router.post("/marketing", async (req, res) => {
-  let dateFrom = new Date(req.body.dateFrom);
-  let dateTo = new Date(req.body.dateTo);
+  let dateFrom = new Date(req.body.dateFrom) || new Date();
+  let dateTo = new Date(req.body.dateTo) || null;
   console.log("dateFrom", dateFrom);
   console.log("dateTo", dateTo);
   const marketing = new Marketing({
@@ -64,8 +64,8 @@ router.post("/marketing", async (req, res) => {
     condition: req.body.condition,
     condition_value: req.body.condition_value,
     isFlashSale: req.body.isFlashSale,
-    dateFrom: req.body.dateFrom,
-    dateTo: req.body.dateTo,
+    dateFrom: dateFrom,
+    dateTo: dateTo,
   });
   try {
     const newMarketing = await marketing.save();
@@ -110,11 +110,13 @@ router.patch("/marketing/:id", getMarketingById, async (req, res) => {
   if (req.marketing.isFlashSale != null) {
     req.marketing.isFlashSale = req.body.isFlashSale;
   }
-  let dateFrom = new Date(req.body.dateFrom);
-  let dateTo = new Date(req.body.dateTo);
+  let dateFrom = req.body.dateFrom ? new Date(req.body.dateFrom) : new Date();
+  let dateTo = req.body.dateTo ? new Date(req.body.dateTo) : null;
   dateFrom.setTime(dateFrom.getTime() + 7 * 60 * 60 * 1000);
-  dateTo.setTime(dateTo.getTime() + 7 * 60 * 60 * 1000);
-  
+  if (dateTo) {
+    dateTo.setTime(dateTo.getTime() + 7 * 60 * 60 * 1000);
+  }
+
   if (req.marketing.dateFrom != null) {
     req.marketing.dateFrom = dateFrom;
   }

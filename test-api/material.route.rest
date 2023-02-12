@@ -1,4 +1,12 @@
 
+GET http://localhost:4000/api/inventory-quantity-check?typeId=62918ab4cab3b0249cbd2de3&condition=200
+
+###
+
+GET http://localhost:4000/api/inventory-date-check?typeId=62918ab4cab3b0249cbd2de3&dateRemain=1676209201292
+
+###
+
 GET http://localhost:4000/api/inventory-date-expiration
 
 ###
