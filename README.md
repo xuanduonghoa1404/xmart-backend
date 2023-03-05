@@ -1,4 +1,4 @@
-# Chuyển tới thư mục cafe-manager-backend
+# Chuyển tới thư mục xmart-manager-backend
 
 # Chạy lệnh
 
@@ -8,5 +8,3 @@ npm start
 ```
 
 # Xem các cấu hình ở .env
-
-# Kiểm thử api ở thư mục test-api thông qua Rest Client extensions của VSCode
