@@ -1,8 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const Order = require('../models/Order');
-const User = require('../models/User');
-const Table = require('../models/Table');
+const User = require("../models/User");
 const Product = require('../models/Product');
 const moment = require('moment');
 
@@ -13,28 +12,23 @@ router.get('/statistic', async (req, res) => {
         let end = moment(Number.parseInt(req.query.end));
         console.log(begin, end);
         const order = await Order.find({
-            updatedAt: {
-                $gte: begin.get('time'),
-                $lte: end.get('time'),
-            },
-            // status: 'paid',
+          updatedAt: {
+            $gte: begin.get("time"),
+            $lte: end.get("time"),
+          },
         })
-            .sort({ createAt: -1 })
-            // .populate('order.product')
-            .populate('user', 'name email')
-            .populate('cart')
-            .populate({
-                path: 'cart',
-                populate: {
-                    path: 'products',
-                    populate: {
-                        path: 'product'
-                    },
-                },
-            })
-        // .populate('user', 'name')
-        // .populate('table', 'name');
-        console.log("order", order);
+          .sort({ createAt: -1 })
+          .populate("user", "name email")
+          .populate("cart")
+          .populate({
+            path: "cart",
+            populate: {
+              path: "products",
+              populate: {
+                path: "product",
+              },
+            },
+          });
         let resData = order.map((item, index) => {
             return { totalPrice: item.total, time: item.updatedAt };
         });
@@ -46,21 +40,20 @@ router.get('/statistic', async (req, res) => {
 router.get('/statistic/order', async (req, res) => {
     try {
         const order = await Order.find({
-            // status: 'paid',
+          // status: 'paid',
         })
-            .sort({ createAt: -1 })
-            // .populate('order.product')
-            .populate('user', 'name email')
-            .populate('cart')
-            .populate({
-                path: 'cart',
-                populate: {
-                    path: 'products',
-                    populate: {
-                        path: 'product'
-                    },
-                },
-            })
+          .sort({ createAt: -1 })
+          .populate("user", "name email")
+          .populate("cart")
+          .populate({
+            path: "cart",
+            populate: {
+              path: "products",
+              populate: {
+                path: "product",
+              },
+            },
+          });
 
         res.json(order);
     } catch (error) {
@@ -280,39 +273,28 @@ router.get('/statistic-order-total', async (req, res) => {
             )
         }
 
-        // create aggregation query
         p = [
-            { $match: { "createdAt": { $gte: startDate, $lte: endDate } } },
-            {
-                $bucket: {
-                    boundaries: boundaries,
-                    groupBy: "$createdAt",
-                    default: "other",
-                    output: {
-                        subtotal: { $sum: 1 },
-                        totalPrice: { $sum: "$total" },
-                    }
-                }
+          { $match: { createdAt: { $gte: startDate, $lte: endDate } } },
+          {
+            $bucket: {
+              boundaries: boundaries,
+              groupBy: "$createdAt",
+              default: "other",
+              output: {
+                subtotal: { $sum: 1 },
+                totalPrice: { $sum: "$total" },
+              },
             },
-            // {
-            //     $densify: {
-            //         field: "_id",
-            //         range: {
-            //             step: 1,
-            //             unit: "day",
-            //             bounds: [startDate, endDate],
-            //         }
-            //     }
-            // },
-            {
-                $project: {
-                    totalPrice: { $ifNull: ["$totalPrice", 0] },
-                    subtotal: { $ifNull: ["$subtotal", 0] },
-                    date: { $dateToString: { date: "$_id" } },
-                    _id: 0,
-                }
+          },
+          {
+            $project: {
+              totalPrice: { $ifNull: ["$totalPrice", 0] },
+              subtotal: { $ifNull: ["$subtotal", 0] },
+              date: { $dateToString: { date: "$_id" } },
+              _id: 0,
             },
-        ]
+          },
+        ];
         let order = await Order
             .aggregate(p)
         res.json(order);

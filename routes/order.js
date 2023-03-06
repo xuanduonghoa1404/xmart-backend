@@ -6,206 +6,75 @@ const Cart = require('../models/Cart');
 const Product = require('../models/Product');
 const { number, func } = require('joi');
 //Getting All (For Admin)
-router.get('/order', async (req, res) => {
-    try {
-        let limit = Number(req.query.limit);
-        let page = Number(req.query.page);
-        const order = await Order.find()
-            .sort({ createAt: -1 })
-            .limit(limit)
-            .skip(limit * page)
-            // .populate('order.product')
-            // .populate({
-            //     path: 'cart.products',
-            //     populate: {
-            //         path: 'product',
-            //     },
-            // })
-            
-            .populate('user', 'name email')
-            .populate('cart')
-            .populate({
-                path: 'cart',
-                populate: {
-                    path: 'products',
-                    populate: {
-                        path: 'product'
-                    },
-                },
-            })
-            // .populate({
-            //     path: 'cart.user',
-            //     select:
-            //       'name',
-            //   });;
-        res.json(order);
-    } catch (error) {
-        res.status(400).json({ message: error.message });
-    }
-});
-
-//Save one
-router.post('/order', async (req, res) => {
-    let totalPrice = 0;
-    for (let i = 0; i < req.body.order.length; i++) {
-        let product = await Product.findById(req.body.order[i].product);
-        totalPrice += Number(product.price) * Number(req.body.order[i].amount);
-        let newBook = { amount: req.body.order[i].amount, time: new Date() };
-        console.log(newBook);
-        if (!product.book) product.book = [];
-        product.book.push(newBook);
-        console.log(product.book);
-    }
-    const order = new Order({
-        user: req.body.user,
-        table: req.body.table,
-        order: req.body.order,
-        status: req.body.status,
-        totalPrice,
-    });
-
-    let table;
-    try {
-        table = await Table.findById(req.body.table);
-        if (table != null) {
-            table.status = 'busy';
-        }
-        await table.save();
-    } catch (error) {
-        return res.status(500).json({ message: error.message });
-    }
-
-    try {
-        const newOrder = await order.save();
-        res.status(201).json(newOrder);
-    } catch (err) {
-        res.status(400).json({ message: err.message });
-    }
-});
-
-//Add order 
-
-router.post('/add', async (req, res) => {
-    try {
-      const cart = req.body.cartId;
-      const total = req.body.total;
-      const user = req.user._id;
-  
-      const order = new Order({
-        cart,
-        user,
-        total
-      });
-  
-      const orderDoc = await order.save();
-  
-      const cartDoc = await Cart.findById(orderDoc.cart._id).populate({
-        path: 'products.product',
+router.get("/order", async (req, res) => {
+  try {
+    let limit = Number(req.query.limit);
+    let page = Number(req.query.page);
+    const order = await Order.find()
+      .sort({ createAt: -1 })
+      .limit(limit)
+      .skip(limit * page)
+      .populate("user", "name email")
+      .populate("cart")
+      .populate({
+        path: "cart",
         populate: {
-          path: 'brand'
-        }
+          path: "products",
+          populate: {
+            path: "product",
+          },
+        },
       });
-  
-      const newOrder = {
-        _id: orderDoc._id,
-        created: orderDoc.created,
-        user: orderDoc.user,
-        total: orderDoc.total,
-        products: cartDoc.products
-      };
-  
-      res.status(200).json({
-        success: true,
-        message: `Your order has been placed successfully!`,
-        order: { _id: orderDoc._id }
-      });
-    } catch (error) {
-      res.status(400).json({
-        error: 'Your request could not be processed. Please try again.'
-      });
-    }
-  });
+    res.json(order);
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+});
 
-//Save one email
-router.post('/orderemail', async (req, res) => {
-    let totalPrice = 0;
-    for (let i = 0; i < req.body.order.length; i++) {
-        let product = await Product.findById(req.body.order[i].product);
-        totalPrice += Number(product.price) * Number(req.body.order[i].amount);
-        let newBook = { amount: req.body.order[i].amount, time: new Date() };
-        if (!product.book) product.book = [];
-        product.book.push(newBook);
-        // product.book.amount += req.body.order[i].amount;
-        try {
-            await product.save();
-        } catch (error) {
-            res.status(400).json({ message: err.message });
-        }
-    }
-    let userId = await User.findOne({ email: req.body.email });
-    let tableId = await Table.findOne({ user: userId });
-    if (req.body.table) {
-        tableId = req.body.table;
-    }
-    if (!tableId) {
-        res.status(200).json({ message: 'Bạn đã mua hàng chưa đặt bàn!' });
-    }
-    console.log(userId);
+//Add order
+
+router.post("/add", async (req, res) => {
+  try {
+    const cart = req.body.cartId;
+    const total = req.body.total;
+    const user = req.user._id;
+
     const order = new Order({
-        user: userId._id,
-        table: tableId,
-        order: req.body.order,
-        status: req.body.status,
-        totalPrice,
+      cart,
+      user,
+      total,
     });
 
-    if (tableId) {
-        let table;
-        try {
-            table = await Table.findById(tableId);
-            if (table != null) {
-                table.status = 'busy';
-            }
-            await table.save();
-        } catch (error) {
-            return res.status(500).json({ message: error.message });
-        }
-    }
+    const orderDoc = await order.save();
 
-    try {
-        const newOrder = await order.save();
-        res.status(201).json(newOrder);
-    } catch (err) {
-        res.status(400).json({ message: err.message });
-    }
+    const cartDoc = await Cart.findById(orderDoc.cart._id).populate({
+      path: "products.product",
+      populate: {
+        path: "brand",
+      },
+    });
+
+    const newOrder = {
+      _id: orderDoc._id,
+      created: orderDoc.created,
+      user: orderDoc.user,
+      total: orderDoc.total,
+      products: cartDoc.products,
+    };
+
+    res.status(200).json({
+      success: true,
+      message: `Your order has been placed successfully!`,
+      order: { _id: orderDoc._id },
+    });
+  } catch (error) {
+    res.status(400).json({
+      error: "Your request could not be processed. Please try again.",
+    });
+  }
 });
-//Update one
-// router.patch('/order/:id', getOrderById, async (req, res) => {
-//     if (req.body.name != null) {
-//         req.order.name = req.body.name;
-//     }
 
-//     if (req.body.description != null) {
-//         req.order.description = req.body.description;
-//     }
 
-//     try {
-//         const updateOrder = await req.order.save();
-//         res.json(updateOrder);
-//     } catch (err) {
-//         res.status(400).json({ message: err.message });
-//     }
-// });
-//Caculate totalPrice one
-// router.patch('/order/:id', getOrderById, async (req, res) => {
-//     try {
-//         let order = req.order.order;
-//         let totalPrice = await caculateTotalPrice(order);
-//         res.json({ 'totalPrice': totalPrice });
-//     } catch (err) {
-//         res.status(400).json({ message: err.message });
-//     }
-// });
 //Update status one
 router.patch('/order/:id/status/:status', getOrderById, async (req, res) => {
     if (req.order.status != null) {

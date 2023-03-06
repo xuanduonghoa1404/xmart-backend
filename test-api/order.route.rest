@@ -2,21 +2,6 @@
 GET http://localhost:4000/api/order
 
 
-### tạo 1 order mới
-
-POST http://localhost:4000/api/order
-Content-Type: application/json
-
-{
-    "user": "5fd8d000ada09a4278aad846",
-    "table": "5fb2a8cf039b7554187ec327",
-    "order": [
-                {
-                "product": "5fd65f4456d94b2d6c8e51e3",
-                "amount" : 4
-                }
-            ]
-}
 
 ### test email
 

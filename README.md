@@ -1,10 +1,10 @@
-# Chuyển tới thư mục xmart-manager-backend
+# Goto folder xmart-backend
 
-# Chạy lệnh
+# Run
 
 ```
 npm i
 npm start
 ```
 
-# Xem các cấu hình ở .env
+# Config .env
