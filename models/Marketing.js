@@ -39,7 +39,7 @@ const marketingSchema = new mongoose.Schema({
   },
   condition: {
     type: String,
-    enum: ["QTY", "DATE", "ALL"],
+    enum: ["QTY", "DATE", "ALL", "QTY_GREATER", "QTY_LESS"],
     default: "DATE",
   },
   condition_value: {
