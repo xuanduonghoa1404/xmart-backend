@@ -2,68 +2,22 @@ const express = require('express');
 const router = express.Router();
 const User = require('../models/User');
 //Getting list of user
-router.get('/user', async (req, res) => {
-    try {
-        let limit = Number(req.query.limit);
-        let page = Number(req.query.page);
-        const user = await User.find({
-            role: { $in: ['admin', 'cashier', 'inventoryManager'] },
-        })
-            .sort({ createdAt: -1 })
-            .limit(limit)
-            .skip(limit * page);
-        res.json(user);
-    } catch (error) {
-        res.status(400).json({ message: error.message });
-    }
+router.get("/user", async (req, res) => {
+  try {
+    let limit = Number(req.query.limit);
+    let page = Number(req.query.page);
+    const user = await User.find({
+      role: { $in: ["admin", "customer"] },
+    })
+      .sort({ createdAt: -1 })
+      .limit(limit)
+      .skip(limit * page);
+    res.json(user);
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
 });
 
-//Getting list of cashier
-router.get('/cashier', async (req, res) => {
-    try {
-        // let limit = Number(req.query.limit);
-        // let page = Number(req.query.page);
-        const saleStaff = await User.find({ role: 'cashier' }).sort({
-            createdAt: -1,
-        });
-        // .limit(limit)
-        // .skip(limit * page);
-        res.json(saleStaff);
-    } catch (error) {
-        res.status(400).json({ message: error.message });
-    }
-});
-
-//Getting list of inventoryManager
-router.get('/inventoryManager', async (req, res) => {
-    try {
-        let limit = Number(req.query.limit);
-        let page = Number(req.query.page);
-        const repoStaff = await User.find({ role: 'inventoryManager' })
-            .sort({ createdAt: -1 })
-            .limit(limit)
-            .skip(limit * page);
-        res.json(repoStaff);
-    } catch (error) {
-        res.status(400).json({ message: error.message });
-    }
-});
-
-//Getting list of admin
-router.get('/admin', async (req, res) => {
-    try {
-        // let limit = Number(req.query.limit);
-        // let page = Number(req.query.page);
-        const admin = await User.find({ role: 'admin' }).sort({
-            createdAt: -1,
-        });
-        // .limit(limit)
-        // .skip(limit * page);
-        res.json(admin);
-    } catch (error) {
-        res.status(400).json({ message: error.message });
-    }
-});
 
 //Update one
 router.patch('/user/:id', getUserById, async (req, res) => {
