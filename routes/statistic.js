@@ -4,65 +4,77 @@ const Order = require('../models/Order');
 const User = require("../models/User");
 const Product = require('../models/Product');
 const moment = require('moment');
-
+const mongoose = require("mongoose");
 //Getting All (For Admin)
-router.get('/statistic', async (req, res) => {
-    try {
-        let begin = moment(Number.parseInt(req.query.begin));
-        let end = moment(Number.parseInt(req.query.end));
-        console.log(begin, end);
-        const order = await Order.find({
-          updatedAt: {
-            $gte: begin.get("time"),
-            $lte: end.get("time"),
+router.get("/statistic", async (req, res) => {
+  try {
+    let begin = moment(Number.parseInt(req.query.begin));
+    let end = moment(Number.parseInt(req.query.end));
+    const order = await Order.find({
+      updatedAt: {
+        $gte: begin.get("time"),
+        $lte: end.get("time"),
+      },
+    })
+      .sort({ createAt: -1 })
+      .populate("user", "name email")
+      .populate("cart")
+      .populate({
+        path: "cart",
+        populate: {
+          path: "products",
+          populate: {
+            path: "product",
           },
-        })
-          .sort({ createAt: -1 })
-          .populate("user", "name email")
-          .populate("cart")
-          .populate({
-            path: "cart",
-            populate: {
-              path: "products",
-              populate: {
-                path: "product",
-              },
-            },
-          });
-        let resData = order.map((item, index) => {
-            return { totalPrice: item.total, time: item.updatedAt };
-        });
-        res.json(resData);
-    } catch (error) {
-        res.status(400).json({ message: error.message });
-    }
+        },
+      });
+    let resData = order.map((item, index) => {
+      return { totalPrice: item.total, time: item.updatedAt };
+    });
+    res.json(resData);
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
 });
-router.get('/statistic/order', async (req, res) => {
-    try {
-        const order = await Order.find({
-          // status: 'paid',
-        })
-          .sort({ createAt: -1 })
-          .populate("user", "name email")
-          .populate("cart")
-          .populate({
-            path: "cart",
-            populate: {
-              path: "products",
-              populate: {
-                path: "product",
-              },
-            },
-          });
+router.get("/statistic/order", async (req, res) => {
+  try {
+    let locator = req.query.locator;
+    let match =
+      locator && locator !== "null"
+        ? {
+            locator: { $eq: mongoose.Types.ObjectId(locator) },
+          }
+        : {};
 
-        res.json(order);
-    } catch (error) {
-        res.status(400).json({ message: error.message });
-    }
+    const order = await Order.find(match)
+      .sort({ createAt: -1 })
+      .populate("user", "name email")
+      .populate("cart")
+      .populate({
+        path: "cart",
+        populate: {
+          path: "products",
+          populate: {
+            path: "product",
+          },
+        },
+      });
+
+    res.json(order);
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
 });
 router.get("/statistic/product", async (req, res) => {
   try {
-    const orders = await Order.find().populate({
+    let locator = req.query.locator;
+    let match =
+      locator && locator !== "null"
+        ? {
+            locator: { $eq: mongoose.Types.ObjectId(locator) },
+          }
+        : {};
+    const orders = await Order.find(match).populate({
       path: "cart",
       populate: {
         path: "products.product",
@@ -104,8 +116,21 @@ router.get("/statistic-number-order", async (req, res) => {
       : new Date();
     let endDate = endParam;
     let startDate = beginParam;
+    let locator = req.query.locator;
+    let match =
+      locator && locator !== "null"
+        ? {
+            created: { $gte: startDate, $lt: endDate },
+            locator: { $eq: mongoose.Types.ObjectId(locator) },
+          }
+        : {
+            created: { $gte: startDate, $lt: endDate },
+          };
+
     const product = await Order.aggregate([
-      { $match: { created: { $gte: startDate, $lt: endDate } } },
+      {
+        $match: match,
+      },
       {
         $group: {
           _id: {
